@@ -1,2 +1,115 @@
-# emotion-detection-imbalanced
-Imbalance-aware multi-label emotion detection using BERT and combine loss.
+# Imbalance-Aware Multi-Label Emotion Detection
+
+Fine-tuning **BERT** for **multi-label emotion classification** on
+[**GoEmotions**](https://huggingface.co/datasets/go_emotions), with a
+**combined loss** (weighted BCE + focal loss) designed to handle the dataset's
+heavy class imbalance.
+
+This is a small, self-contained reference implementation built with PyTorch and
+the Hugging Face `transformers` / `datasets` libraries. It focuses on doing one
+thing clearly: showing how imbalance-aware loss functions improve performance on
+rare emotion labels.
+
+> **Background.** I worked on imbalanced multilingual emotion detection as a
+> co-author of *LATE-GIL-NLP at SemEval-2025 Task 11*
+> ([ACL Anthology](https://aclanthology.org/2025.semeval-1.93/)). This repo does
+> **not** contain that shared task's code or data; it is a clean, standalone demo
+> of the same core idea — transformer fine-tuning with combined imbalance-aware
+> losses — on the public GoEmotions dataset, so anyone can run it end to end.
+
+## Method
+
+GoEmotions has 28 labels (27 emotions + `neutral`) and a long-tailed
+distribution: a handful of labels are common while many are rare. Two
+complementary techniques address this:
+
+- **Weighted BCE** — each class gets a `pos_weight = (# negatives / # positives)`
+  computed from the training split, so rare labels contribute more to the loss.
+- **Focal loss** — the `(1 - p_t) ** gamma` term down-weights easy, confident
+  predictions and concentrates learning on hard examples.
+
+The training objective combines them:
+
+```
+loss = bce_weight * weighted_BCE + (1 - bce_weight) * focal_BCE
+```
+
+Both `gamma` and `bce_weight` are exposed as command-line flags so you can
+ablate each component.
+
+## Project structure
+
+```
+.
+├── train.py            # fine-tuning entry point (argparse)
+├── evaluate.py         # evaluate a saved checkpoint on the test split
+├── requirements.txt
+└── src/
+    ├── data.py         # GoEmotions loading + multi-hot preprocessing
+    ├── losses.py       # CombinedLoss (weighted BCE + focal)
+    ├── metrics.py      # micro/macro F1 + per-class F1
+    └── trainer.py      # custom Trainer + multi-label collator
+```
+
+## Setup
+
+```bash
+git clone https://github.com/{{GITHUB_USERNAME}}/emotion-detection-imbalanced.git
+cd emotion-detection-imbalanced
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## Usage
+
+Quick sanity check on a small subset (runs on CPU in a few minutes):
+
+```bash
+python train.py --max_train_samples 2000 --max_eval_samples 500 --epochs 1
+```
+
+Full training run (GPU recommended):
+
+```bash
+python train.py --epochs 3 --batch_size 16 --lr 2e-5 --gamma 2.0 --bce_weight 0.5
+```
+
+Evaluate a saved checkpoint:
+
+```bash
+python evaluate.py --model_dir outputs --threshold 0.5
+```
+
+## Results
+
+Run on the GoEmotions test split (threshold = 0.5). _Fill in after your first full run:_
+
+| Metric          | Value |
+|-----------------|-------|
+| F1 (micro)      | TBD   |
+| F1 (macro)      | TBD   |
+| Precision (macro) | TBD |
+| Recall (macro)  | TBD   |
+
+Per-class F1 is printed at the end of training/evaluation, sorted ascending, so
+you can see exactly which rare emotions benefit most from the combined loss.
+
+## Notes & possible extensions
+
+- **Decision threshold.** A single global `0.5` threshold is used by default.
+  Tuning per-class thresholds on the validation split typically improves macro-F1.
+- **Multilingual.** Swapping `--model_name bert-base-uncased` for
+  `xlm-roberta-base` and a multilingual dataset extends this to non-English
+  emotion detection.
+- **Loss ablations.** Set `--bce_weight 1.0` for weighted BCE only or
+  `--bce_weight 0.0` for focal only to compare against the combination.
+
+## License
+
+[MIT](LICENSE)
+
+## Acknowledgements
+
+GoEmotions: Demszky et al., 2020. Built with
+[Hugging Face Transformers](https://github.com/huggingface/transformers) and
+[Datasets](https://github.com/huggingface/datasets).
