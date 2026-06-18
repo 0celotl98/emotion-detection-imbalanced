@@ -84,12 +84,47 @@ python evaluate.py --model_dir outputs --threshold 0.5
 
 Run on the GoEmotions test split (threshold = 0.5). _Fill in after your first full run:_
 
-| Metric          | Value |
-|-----------------|-------|
-| F1 (micro)      | TBD   |
-| F1 (macro)      | TBD   |
-| Precision (macro) | TBD |
-| Recall (macro)  | TBD   |
+| Metric          | Value |## Results — GoEmotions (BERT fine-tune, weighted-BCE + focal loss)
+
+### Aggregate
+
+| Metric            | Score   |
+|-------------------|---------|
+| F1 (micro)        | 0.4476  |
+| F1 (macro)        | 0.4100  |
+| Precision (macro) | 0.3019  |
+| Recall (macro)    | 0.7601  |
+
+### Per-class F1
+
+| Emotion        | F1    |   | Emotion        | F1    |
+|----------------|-------|---|----------------|-------|
+| gratitude      | 0.831 |   | annoyance      | 0.351 |
+| amusement      | 0.800 |   | caring         | 0.330 |
+| love           | 0.753 |   | disgust        | 0.325 |
+| neutral        | 0.679 |   | confusion      | 0.320 |
+| admiration     | 0.641 |   | pride          | 0.298 |
+| remorse        | 0.530 |   | excitement     | 0.271 |
+| curiosity      | 0.525 |   | disappointment | 0.240 |
+| fear           | 0.509 |   | nervousness    | 0.218 |
+| surprise       | 0.469 |   | embarrassment  | 0.213 |
+| sadness        | 0.414 |   | realization    | 0.192 |
+| desire         | 0.409 |   | relief         | 0.161 |
+| anger          | 0.407 |   | grief          | 0.133 |
+| joy            | 0.404 |   |                |       |
+| optimism       | 0.400 |   |                |       |
+| approval       | 0.362 |   |                |       |
+| disapproval    | 0.352 |   |                |       |
+
+**Takeaway:** high-frequency, lexically distinctive classes (`gratitude`,
+`amusement`, `love`, `neutral`) are learned well, while rare, context-dependent
+classes (`grief`, `relief`, `realization`) remain hard — the long-tail pattern
+the weighted-BCE + focal loss is meant to mitigate. The high macro-recall
+(0.76) vs. low macro-precision (0.30) shows the loss is trading precision for
+coverage on rare labels.
+
+<!-- TODO (reproducibility): base checkpoint, decision threshold,
+     epochs / LR, train/val split. -->
 
 Per-class F1 is printed at the end of training/evaluation, sorted ascending, so
 you can see exactly which rare emotions benefit most from the combined loss.
