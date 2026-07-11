@@ -54,7 +54,7 @@ ablate each component.
 ## Setup
 
 ```bash
-git clone https://github.com/{{GITHUB_USERNAME}}/emotion-detection-imbalanced.git
+git clone https://github.com/0celotl98/emotion-detection-imbalanced.git
 cd emotion-detection-imbalanced
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
@@ -82,9 +82,7 @@ python evaluate.py --model_dir outputs --threshold 0.5
 
 ## Results
 
-Run on the GoEmotions test split (threshold = 0.5). _Fill in after your first full run:_
-
-| Metric          | Value |## Results — GoEmotions (BERT fine-tune, weighted-BCE + focal loss)
+Run on the GoEmotions test split (threshold = 0.5)._
 
 ### Aggregate
 
