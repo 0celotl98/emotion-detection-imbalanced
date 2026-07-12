@@ -79,10 +79,44 @@ Evaluate a saved checkpoint:
 ```bash
 python evaluate.py --model_dir outputs --threshold 0.5
 ```
+## Reproducibility
+
+The reported results use the following configuration:
+
+* **Base checkpoint:** `bert-base-uncased`
+* **Dataset:** GoEmotions, `simplified` configuration
+* **Training data:** full `train` split
+* **Model selection:** best checkpoint by macro-F1 on the `validation` split
+* **Final evaluation:** full `test` split
+* **Epochs:** `3`
+* **Learning rate:** `2e-5`
+* **Per-device batch size:** `16`
+* **Maximum sequence length:** `128`
+* **Focal-loss gamma:** `2.0`
+* **Weighted-BCE contribution:** `0.5`
+* **Global decision threshold:** `0.5`
+* **Random seed:** `42`
+
+```bash
+python train.py \
+  --model_name bert-base-uncased \
+  --epochs 3 \
+  --batch_size 16 \
+  --lr 2e-5 \
+  --max_length 128 \
+  --gamma 2.0 \
+  --bce_weight 0.5 \
+  --threshold 0.5 \
+  --seed 42
+```
+
+The training script evaluates once per epoch, reloads the checkpoint with the best validation macro-F1 and reports the final metrics on the test split.
+
+> Exact numerical reproduction may also depend on the installed PyTorch, Transformers, CUDA and hardware versions. No original training log or trained checkpoint is currently included in this repository.
 
 ## Results
 
-Run on the GoEmotions test split (threshold = 0.5)._
+Run on the GoEmotions test split (threshold = 0.5).
 
 ### Aggregate
 
